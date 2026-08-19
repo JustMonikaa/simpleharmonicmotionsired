@@ -58,7 +58,7 @@
         #top-controls-wrapper {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             position: absolute;
             top: 20px;
             left: 20px;
@@ -100,7 +100,7 @@
         #shm-switches {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         /* Standard Buttons */
@@ -160,7 +160,7 @@
         .sq-btn.active { background-color: #646464; }
 
         /* Text Inputs & Dropdowns */
-        .input-group { margin-top: 5px; }
+        .input-group { margin-top: 5px; margin-bottom: 5px; }
         .input-label { display: block; font-size: 14px; margin-bottom: 5px; }
         .text-input {
             background-color: #1e1e1e;
@@ -174,6 +174,12 @@
             outline: none;
         }
         .text-input:focus { border-color: #87c2a5; }
+
+        .text-input:disabled {
+            background-color: #2a2a2a;
+            color: #787878;
+            cursor: not-allowed;
+        }
 
         /* Radio Buttons */
         .radio-group { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; }
@@ -202,7 +208,7 @@
         #trig-desc-box {
             display: none; 
             position: absolute; 
-            top: 600px; 
+            bottom: 150px; 
             left: 20px; 
             width: 320px; 
             padding: 15px; 
@@ -253,36 +259,8 @@
                 <button class="btn" id="btn-reset">Reset</button>
             </div>
 
-            <!-- Variables (Hidden in Circle Mode) -->
-            <div id="variable-controls">
-                <div class="input-group" id="group-freq">
-                    <span class="input-label">Freq (Hz) [Enter]:</span>
-                    <input type="text" class="text-input" id="input-freq">
-                </div>
-                
-                <div class="input-group" id="group-k">
-                    <span class="input-label">Spring Const (K):</span>
-                    <input type="text" class="text-input" id="input-k">
-                </div>
-
-                <div class="radio-group" id="group-radios">
-                    <div class="radio-item" data-k="39.478">
-                        <div class="radio-circle"><div class="radio-dot"></div></div>
-                        <span class="switch-label">Default (K=39.5)</span>
-                    </div>
-                    <div class="radio-item" data-k="15.0">
-                        <div class="radio-circle"><div class="radio-dot"></div></div>
-                        <span class="switch-label">Slinky (Soft)</span>
-                    </div>
-                    <div class="radio-item" data-k="150.0">
-                        <div class="radio-circle"><div class="radio-dot"></div></div>
-                        <span class="switch-label">Suspension (Stiff)</span>
-                    </div>
-                </div>
-            </div>
-
             <!-- Circle Mode Trigonometry Dropdown -->
-            <div class="input-group" id="group-trig" style="display: none;">
+            <div class="input-group" id="group-trig" style="display: none; margin-top: 10px;">
                 <span class="input-label">Trig Function:</span>
                 <select class="text-input" id="trig-select" style="cursor: pointer;">
                     <option value="sin">Sine (sin)</option>
@@ -292,6 +270,55 @@
                     <option value="csc">Cosecant (csc)</option>
                     <option value="cot">Cotangent (cot)</option>
                 </select>
+            </div>
+
+            <!-- Frequency -->
+            <div class="input-group" id="group-freq" style="margin-top: 10px;">
+                <span class="input-label">Freq (Hz) [Enter]:</span>
+                <input type="text" class="text-input" id="input-freq">
+            </div>
+
+            <!-- Angular Velocity Section (Circle Mode Only) -->
+            <div id="group-angvel-container" style="display: none;">
+                <div class="switch-container" id="sw-angular-vel-toggle" style="margin-bottom: 5px;">
+                    <div class="switch-track" id="sw-angular-vel-track"><div class="switch-thumb"></div></div>
+                    <div class="switch-label">Angular Velocity</div>
+                </div>
+                
+                <div id="angvel-inputs" style="display: none; padding-left: 5px; border-left: 2px solid #646464; margin-top: 10px;">
+                    <div class="input-group" style="margin-bottom: 5px;">
+                        <span class="input-label">Value [Enter]:</span>
+                        <input type="text" class="text-input" id="input-angvel" style="width: 80px;">
+                    </div>
+                    <div class="switch-container" id="sw-degrad-toggle" style="margin-bottom: 5px;">
+                        <div class="switch-track" id="sw-degrad-track"><div class="switch-thumb"></div></div>
+                        <div class="switch-label" id="lbl-degrad">RAD</div>
+                    </div>
+                    <small id="rad-warning" style="color: #e07a5f; display: block; max-width: 140px; line-height: 1.2;">
+                        Reads as fraction of π<br>(e.g., '1/6' = π/6)
+                    </small>
+                </div>
+            </div>
+            
+            <!-- OSC/SHM Variables -->
+            <div class="input-group" id="group-k">
+                <span class="input-label">Spring Const (K):</span>
+                <input type="text" class="text-input" id="input-k">
+            </div>
+
+            <div class="radio-group" id="group-radios">
+                <div class="radio-item" data-k="39.478">
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                    <span class="switch-label">Default (K=39.5)</span>
+                </div>
+                <div class="radio-item" data-k="15.0">
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                    <span class="switch-label">Slinky (Soft)</span>
+                </div>
+                <div class="radio-item" data-k="150.0">
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                    <span class="switch-label">Suspension (Stiff)</span>
+                </div>
             </div>
         </div>
 
@@ -363,28 +390,51 @@
         let swAmplitude = false;
         let swGraph = false;
         let swOneCycle = false;
+        let swAngularVel = false;
+        let isDegMode = false;
         let selectedTrig = "sin";
 
         // --- DOM Elements ---
         const elShmSwitches = document.getElementById('shm-switches');
         const elSwFriction = document.getElementById('sw-friction');
-        const elVarControls = document.getElementById('variable-controls');
+        
+        const elGroupFreq = document.getElementById('group-freq');
+        const elGroupK = document.getElementById('group-k');
+        const elGroupRadios = document.getElementById('group-radios');
         const elGroupTrig = document.getElementById('group-trig');
+        
+        const elAngVelContainer = document.getElementById('group-angvel-container');
+        const elAngVelInputs = document.getElementById('angvel-inputs');
+        const elLblDegRad = document.getElementById('lbl-degrad');
+        const elRadWarning = document.getElementById('rad-warning');
+
         const elDescBox = document.getElementById('trig-desc-box');
         
         const elOscBtn = document.getElementById('btn-osc');
         const elShmBtn = document.getElementById('btn-shm');
         const elCircleBtn = document.getElementById('btn-circle');
+        
         const elFreqIn = document.getElementById('input-freq');
         const elKIn = document.getElementById('input-k');
+        const elAngVelIn = document.getElementById('input-angvel');
         const elTrigSelect = document.getElementById('trig-select');
         const radioItems = document.querySelectorAll('.radio-item');
 
         // --- Core Functions ---
         function updateInputs() {
-            let currentFreq = Math.sqrt(K / MASS) / (2 * Math.PI);
+            let omega = Math.sqrt(K / MASS);
+            let currentFreq = omega / (2 * Math.PI);
+            
             if(document.activeElement !== elFreqIn) elFreqIn.value = currentFreq.toFixed(2);
             if(document.activeElement !== elKIn) elKIn.value = K.toFixed(1);
+            
+            if(document.activeElement !== elAngVelIn) {
+                if (isDegMode) {
+                    elAngVelIn.value = (omega * 180 / Math.PI).toFixed(2);
+                } else {
+                    elAngVelIn.value = (omega / Math.PI).toFixed(2);
+                }
+            }
 
             radioItems.forEach(item => {
                 let itemK = parseFloat(item.dataset.k);
@@ -422,23 +472,32 @@
                 elOscBtn.classList.add('active');
                 elShmSwitches.style.display = "none";
                 elSwFriction.style.display = "flex";
-                elVarControls.style.display = "block";
+                elGroupFreq.style.display = "block";
+                elGroupK.style.display = "block";
+                elGroupRadios.style.display = "flex";
                 elGroupTrig.style.display = "none";
+                elAngVelContainer.style.display = "none";
                 elDescBox.style.display = "none";
             } else if (mode === "SHM") {
                 elShmBtn.classList.add('active');
                 elShmSwitches.style.display = "flex";
                 elSwFriction.style.display = "flex";
-                elVarControls.style.display = "block";
+                elGroupFreq.style.display = "block";
+                elGroupK.style.display = "block";
+                elGroupRadios.style.display = "flex";
                 elGroupTrig.style.display = "none";
+                elAngVelContainer.style.display = "none";
                 elDescBox.style.display = "none";
             } else if (mode === "CIRCLE") {
                 elCircleBtn.classList.add('active');
                 elShmSwitches.style.display = "flex";
                 elSwFriction.style.display = "none";
-                elVarControls.style.display = "none";
+                elGroupFreq.style.display = "block";
+                elGroupK.style.display = "none";
+                elGroupRadios.style.display = "none";
                 elGroupTrig.style.display = "block";
-                elDescBox.style.display = "block";
+                elAngVelContainer.style.display = "block";
+                if (!swAngularVel) elDescBox.style.display = "block";
                 updateTrigDesc();
             }
             resetPhysics();
@@ -478,6 +537,32 @@
             this.querySelector('.switch-track').classList.toggle('active');
         });
 
+        // Angular Velocity Toggle Logic
+        document.getElementById('sw-angular-vel-toggle').addEventListener('click', function() {
+            swAngularVel = !swAngularVel;
+            document.getElementById('sw-angular-vel-track').classList.toggle('active');
+            elAngVelInputs.style.display = swAngularVel ? 'block' : 'none';
+            
+            if (swAngularVel) {
+                elTrigSelect.value = "sin";
+                selectedTrig = "sin";
+                elTrigSelect.disabled = true;
+                elDescBox.style.display = "none";
+            } else {
+                elTrigSelect.disabled = false;
+                elDescBox.style.display = "block";
+                updateTrigDesc();
+            }
+        });
+
+        document.getElementById('sw-degrad-toggle').addEventListener('click', function() {
+            isDegMode = !isDegMode;
+            document.getElementById('sw-degrad-track').classList.toggle('active');
+            elLblDegRad.innerText = isDegMode ? "DEG" : "RAD";
+            elRadWarning.style.display = isDegMode ? "none" : "block";
+            updateInputs();
+        });
+
         elOscBtn.addEventListener('click', () => { mode = "OSC"; updateModeUI(); });
         elShmBtn.addEventListener('click', () => { mode = "SHM"; updateModeUI(); });
         elCircleBtn.addEventListener('click', () => { mode = "CIRCLE"; updateModeUI(); });
@@ -503,6 +588,7 @@
         document.getElementById('btn-stop').addEventListener('click', () => { stopped = true; });
         document.getElementById('btn-reset').addEventListener('click', resetPhysics);
 
+        // Custom inputs for Frequency & Spring Const
         function handleCustomInputs(e) {
             if (e.key === 'Enter' || e.type === 'change') {
                 let val = parseFloat(this.value);
@@ -523,6 +609,44 @@
         elFreqIn.addEventListener('change', handleCustomInputs);
         elKIn.addEventListener('keydown', handleCustomInputs);
         elKIn.addEventListener('change', handleCustomInputs);
+
+        // Custom Input for Angular Velocity
+        function handleAngVelInput(e) {
+            if (e.key === 'Enter') {
+                let val = this.value.trim();
+                let omegaVal = 0;
+                
+                if (isDegMode) {
+                    let num = parseFloat(val);
+                    if (!isNaN(num) && num > 0) {
+                        omegaVal = num * Math.PI / 180;
+                    }
+                } else {
+                    if (val.includes('/')) {
+                        let parts = val.split('/');
+                        let n = parseFloat(parts[0]);
+                        let d = parseFloat(parts[1]);
+                        if (!isNaN(n) && !isNaN(d) && d !== 0) {
+                            omegaVal = (n / d) * Math.PI;
+                        }
+                    } else {
+                        let num = parseFloat(val);
+                        if (!isNaN(num) && num > 0) {
+                            omegaVal = num * Math.PI;
+                        }
+                    }
+                }
+                
+                if (omegaVal > 0) {
+                    let newK = Math.pow(omegaVal, 2) * MASS;
+                    K = Math.max(0.1, Math.min(newK, 300.0));
+                    updateInputs();
+                    resetPhysics();
+                }
+                this.blur();
+            }
+        }
+        elAngVelIn.addEventListener('keydown', handleAngVelInput);
 
         radioItems.forEach(item => {
             item.addEventListener('click', function() {
@@ -548,7 +672,7 @@
                 } else if (mode === "SHM") {
                     bRect = {x: 400 - 25, y: pos - 25, w: 50, h: 50};
                 } else if (mode === "CIRCLE") {
-                    bRect = {x: 600 - 25, y: pos - 25, w: 50, h: 50};
+                    bRect = {x: 640 - 25, y: pos - 25, w: 50, h: 50}; 
                 }
                 
                 if (bRect && m.x > bRect.x - 20 && m.x < bRect.x + bRect.w + 20 &&
@@ -577,7 +701,7 @@
                 let topH = height * 0.8;
                 
                 if (mode === "OSC") {
-                    let wallX = 100;
+                    let wallX = 220;
                     let maxDrag = eqPos - (wallX + 25);
                     pos = Math.max(eqPos - maxDrag, Math.min(m.x, eqPos + maxDrag));
                 } else if (mode === "SHM") {
@@ -606,8 +730,8 @@
                 if (!dragging && !stopped) {
                     phase += omega * dt;
                     pos = eqPos - 150 * Math.sin(phase);
+                    simTime += dt;
                 }
-                simTime += dt;
                 
                 if (swGraph && !dragging && !stopped) {
                     let val = 0;
@@ -622,8 +746,8 @@
                     let yPlot = eqPos - 150 * val;
                     yPlot = Math.max(-5000, Math.min(yPlot, 5000)); 
                     graphHistory.push({t: simTime, y: yPlot});
-                    graphHistory = graphHistory.filter(pt => simTime - pt.t < 10);
                 }
+                graphHistory = graphHistory.filter(pt => simTime - pt.t < 10);
                 return; 
             }
 
@@ -636,8 +760,9 @@
                 vel += acc * dt;
                 pos += vel * dt;
 
+                // --- Rigid Physics Collision to Prevent Wall Clipping ---
                 if (mode === "OSC") {
-                    let wallX = 100;
+                    let wallX = 220; 
                     if (pos - 25 < wallX) {
                         pos = wallX + 25;
                         vel = Math.abs(vel) * 0.8; 
@@ -741,7 +866,7 @@
 
         // --- Renderers ---
         function renderOscillation(topH) {
-            let vX = 100; 
+            let vX = 220; 
             let vY = topH - 150;
 
             drawLine(vX, 50, vX, vY, LINE_COLOR, 2);
@@ -752,7 +877,9 @@
             drawSpring(SPRING_COLOR, vX, vY - 25, bLeft, vY - 25, 3);
             
             ctx.fillStyle = BLOCK_COLOR;
-            ctx.fillRect(bLeft, bTop, 50, 50);
+            ctx.beginPath();
+            ctx.roundRect(bLeft, bTop, 50, 50, 4);
+            ctx.fill();
 
             drawLine(eqPos, vY - 10, eqPos, vY + 10, LINE_COLOR, 2);
             ctx.fillStyle = LINE_COLOR;
@@ -784,13 +911,12 @@
             ctx.fillText(`Period: ${period.toFixed(2)} s`, vX, vY + 65);
 
             if (maxAmpDist > 5) {
-                let alpha = (Math.sin(Date.now() * 0.005) + 1) / 2;
-                let aCol = `rgba(236, 230, 226, ${alpha})`;
+                let aCol = `rgba(236, 230, 226, 0.4)`;
                 let maxX = eqPos + (pos >= eqPos ? maxAmpDist : -maxAmpDist);
                 
                 drawLine(maxX, vY - 80, maxX, vY + 20, aCol, 1);
                 
-                ctx.fillStyle = aCol;
+                ctx.fillStyle = LINE_COLOR;
                 ctx.textAlign = swAmplitude ? "center" : "left";
                 
                 let yArr = vY - 70;
@@ -813,7 +939,9 @@
             drawSpring(SPRING_COLOR, vX, 100, vX, bTop, 3);
             
             ctx.fillStyle = BLOCK_COLOR;
-            ctx.fillRect(vX - 25, bTop, 50, 50);
+            ctx.beginPath();
+            ctx.roundRect(vX - 25, bTop, 50, 50, 4);
+            ctx.fill();
 
             drawLine(vX - 10, eqPos, vX + 10, eqPos, LINE_COLOR, 2);
             ctx.fillStyle = LINE_COLOR;
@@ -873,15 +1001,13 @@
 
                 drawLine(vX + 25, pos, originX, pos, DIM_LINE, 1);
 
-                let alpha = (Math.sin(Date.now() * 0.005) + 1) / 2;
-                let mCol = `rgba(236, 230, 226, ${alpha})`;
-                
+                let gridCol = `rgba(236, 230, 226, 0.3)`;
                 let maxSec = Math.floor(simTime);
                 for(let s = Math.max(0, maxSec - 10); s <= maxSec; s++) {
                     let mx = originX + (simTime - s) * timeScale;
                     if (mx >= originX && mx <= endX) {
-                        drawLine(mx, eqPos - 150, mx, eqPos + 150, mCol, 1);
-                        ctx.fillStyle = mCol;
+                        drawLine(mx, eqPos - 150, mx, eqPos + 150, gridCol, 1);
+                        ctx.fillStyle = gridCol;
                         ctx.fillText(`${s}s`, mx + 5, eqPos - 140);
                     }
                 }
@@ -902,13 +1028,12 @@
             }
 
             if (maxAmpDist > 5) {
-                let alpha = (Math.sin(Date.now() * 0.005) + 1) / 2; 
-                let aCol = `rgba(236, 230, 226, ${alpha})`;
+                let aCol = `rgba(236, 230, 226, 0.4)`;
                 let maxY = eqPos + (pos >= eqPos ? maxAmpDist : -maxAmpDist);
                 
                 drawLine(vX - 80, maxY, vX + 80, maxY, aCol, 1);
                 
-                ctx.fillStyle = aCol;
+                ctx.fillStyle = LINE_COLOR;
                 let arrX = vX - 70;
                 if (swAmplitude) {
                     drawDoubleArrow(aCol, arrX, eqPos, arrX, maxY, 1);
@@ -923,9 +1048,10 @@
 
         function renderCircleMode(topH) {
             let R = 150;
-            let cX = 360; 
-            let sX = 600; 
+            let cX = 400; 
+            let sX = 640; 
 
+            // --- Draw Main Circle Environment ---
             ctx.beginPath();
             ctx.arc(cX, eqPos, R, 0, 2 * Math.PI);
             ctx.strokeStyle = DIM_LINE;
@@ -935,57 +1061,94 @@
             drawLine(cX - R - 20, eqPos, cX + R + 20, eqPos, DIM_LINE, 1);
             drawLine(cX, eqPos - R - 20, cX, eqPos + R + 20, DIM_LINE, 1);
 
-            let cosTheta = Math.cos(phase);
-            let sinTheta = Math.sin(phase);
+            let displayPhase = ((phase % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+            let cosTheta = Math.cos(displayPhase);
+            let sinTheta = Math.sin(displayPhase);
             let pX = cX + R * cosTheta;
             let pY = eqPos - R * sinTheta;
 
-            ctx.beginPath();
-            ctx.arc(pX, pY, 6, 0, 2 * Math.PI);
-            ctx.fillStyle = LINE_COLOR;
-            ctx.fill();
+            if (swAngularVel) {
+                drawLine(cX, eqPos, cX + R + 20, eqPos, LINE_COLOR, 2); 
+                drawLine(cX, eqPos, pX, pY, SPRING_COLOR, 2); 
+
+                ctx.beginPath();
+                ctx.arc(cX, eqPos, 40, 0, -displayPhase, true);
+                ctx.strokeStyle = GRAPH_COLOR;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                let arcEndX = cX + 40 * Math.cos(-displayPhase);
+                let arcEndY = eqPos + 40 * Math.sin(-displayPhase);
+                let arrowAngle = -displayPhase - Math.PI/2;
+                ctx.beginPath();
+                ctx.moveTo(arcEndX, arcEndY);
+                ctx.lineTo(arcEndX - 8 * Math.cos(arrowAngle - Math.PI/6), arcEndY - 8 * Math.sin(arrowAngle - Math.PI/6));
+                ctx.lineTo(arcEndX - 8 * Math.cos(arrowAngle + Math.PI/6), arcEndY - 8 * Math.sin(arrowAngle + Math.PI/6));
+                ctx.fillStyle = GRAPH_COLOR;
+                ctx.fill();
+
+                let bisector = -displayPhase / 2;
+                let lblX = cX + (R / 2) * Math.cos(bisector);
+                let lblY = eqPos + (R / 2) * Math.sin(bisector);
+                let lblText = isDegMode ? Math.round(displayPhase * 180 / Math.PI) + "°" : (displayPhase / Math.PI).toFixed(2) + "π";
+                
+                ctx.fillStyle = LINE_COLOR;
+                ctx.textAlign = "center";
+                ctx.font = "14px 'Consolas', monospace";
+                ctx.fillText(lblText, lblX, lblY + 5);
+
+                ctx.beginPath();
+                ctx.arc(pX, pY, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = LINE_COLOR;
+                ctx.fill();
+
+            } else {
+                ctx.beginPath();
+                ctx.arc(pX, pY, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = LINE_COLOR;
+                ctx.fill();
+
+                drawLine(cX, eqPos, pX, pY, LINE_COLOR, 2);
+                drawArrow(SPRING_COLOR, cX, eqPos, pX, eqPos, 2); 
+                drawArrow(GRAPH_COLOR, pX, eqPos, pX, pY, 2);     
+
+                if (Math.abs(cosTheta) > 0.001 && Math.abs(sinTheta) > 0.001) {
+                    let tx = cX + R / cosTheta;
+                    let ty = eqPos - R / sinTheta;
+
+                    if (selectedTrig === "tan") {
+                        drawLine(pX, pY, tx, eqPos, COLOR_TAN, 3);
+                    } else if (selectedTrig === "cot") {
+                        drawLine(pX, pY, cX, ty, COLOR_COT, 3);
+                    } else if (selectedTrig === "sec") {
+                        drawLine(cX, eqPos, tx, eqPos, COLOR_SEC, 3);
+                    } else if (selectedTrig === "csc") {
+                        drawLine(cX, eqPos, cX, ty, COLOR_CSC, 3);
+                    }
+                }
+
+                let deg = Math.round(displayPhase * 180 / Math.PI);
+                ctx.fillStyle = LINE_COLOR;
+                ctx.font = "14px 'Consolas', monospace";
+
+                ctx.textAlign = "center";
+                let cosTxtY = (sinTheta >= 0) ? eqPos + 20 : eqPos - 12;
+                ctx.fillText(`cos(${deg}°) = ${cosTheta.toFixed(2)}`, cX + (R * cosTheta)/2, cosTxtY);
+
+                ctx.save();
+                let sinTxtX = (cosTheta >= 0) ? pX + 15 : pX - 15;
+                ctx.translate(sinTxtX, eqPos - (R * sinTheta)/2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.textAlign = "center";
+                ctx.fillText(`sin(${deg}°) = ${sinTheta.toFixed(2)}`, 0, 0);
+                ctx.restore();
+            }
 
             ctx.setLineDash([5, 5]);
             drawLine(pX, pY, sX - 25, pos, DIM_LINE, 1);
             ctx.setLineDash([]);
 
-            drawLine(cX, eqPos, pX, pY, LINE_COLOR, 2);
-            drawArrow(SPRING_COLOR, cX, eqPos, pX, eqPos, 2); 
-            drawArrow(GRAPH_COLOR, pX, eqPos, pX, pY, 2);     
-
-            if (Math.abs(cosTheta) > 0.001 && Math.abs(sinTheta) > 0.001) {
-                let tx = cX + R / cosTheta;
-                let ty = eqPos - R / sinTheta;
-
-                if (selectedTrig === "tan") {
-                    drawLine(pX, pY, tx, eqPos, COLOR_TAN, 3);
-                } else if (selectedTrig === "cot") {
-                    drawLine(pX, pY, cX, ty, COLOR_COT, 3);
-                } else if (selectedTrig === "sec") {
-                    drawLine(cX, eqPos, tx, eqPos, COLOR_SEC, 3);
-                } else if (selectedTrig === "csc") {
-                    drawLine(cX, eqPos, cX, ty, COLOR_CSC, 3);
-                }
-            }
-
-            let deg = Math.round((phase * 180 / Math.PI) % 360);
-            if (deg < 0) deg += 360;
-
-            ctx.fillStyle = LINE_COLOR;
-            ctx.font = "14px 'Consolas', monospace";
-
-            ctx.textAlign = "center";
-            let cosTxtY = (sinTheta >= 0) ? eqPos + 20 : eqPos - 12;
-            ctx.fillText(`cos(${deg}°) = ${cosTheta.toFixed(2)}`, cX + (R * cosTheta)/2, cosTxtY);
-
-            ctx.save();
-            let sinTxtX = (cosTheta >= 0) ? pX + 15 : pX - 15;
-            ctx.translate(sinTxtX, eqPos - (R * sinTheta)/2);
-            ctx.rotate(-Math.PI / 2);
-            ctx.textAlign = "center";
-            ctx.fillText(`sin(${deg}°) = ${sinTheta.toFixed(2)}`, 0, 0);
-            ctx.restore();
-
+            // --- Draw Spring Setup ---
             drawLine(sX - 50, 100, sX + 50, 100, LINE_COLOR, 2);
             drawLine(sX, 100, sX, topH - 50, LINE_COLOR, 2);
 
@@ -993,11 +1156,14 @@
             drawSpring(SPRING_COLOR, sX, 100, sX, bTop, 3);
             
             ctx.fillStyle = BLOCK_COLOR;
-            ctx.fillRect(sX - 25, bTop, 50, 50);
+            ctx.beginPath();
+            ctx.roundRect(sX - 25, bTop, 50, 50, 4);
+            ctx.fill();
 
             drawLine(sX - 10, eqPos, sX + 10, eqPos, LINE_COLOR, 2);
             ctx.fillStyle = LINE_COLOR;
             ctx.textAlign = "center";
+            ctx.font = "14px 'Consolas', monospace";
             ctx.fillText("0", sX - 30, eqPos + 4);
 
             let freq = Math.sqrt(K / MASS) / (2 * Math.PI);
@@ -1006,6 +1172,7 @@
             ctx.fillText(`Frequency: ${freq.toFixed(2)} Hz`, sX, 65);
             ctx.fillText(`Period: ${period.toFixed(2)} s`, sX, 85);
 
+            // --- Graphing ---
             if (swGraph) {
                 let originX = 750; 
                 let endX = width - 50;
@@ -1051,15 +1218,13 @@
                     }
                 }
 
-                let alpha = (Math.sin(Date.now() * 0.005) + 1) / 2;
-                let mCol = `rgba(236, 230, 226, ${alpha})`;
-                
+                let gridCol = `rgba(236, 230, 226, 0.3)`;
                 let maxSec = Math.floor(simTime);
                 for(let s = Math.max(0, maxSec - 10); s <= maxSec; s++) {
                     let mx = originX + (simTime - s) * timeScale;
                     if (mx >= originX && mx <= endX) {
-                        drawLine(mx, eqPos - 150, mx, eqPos + 150, mCol, 1);
-                        ctx.fillStyle = mCol;
+                        drawLine(mx, eqPos - 150, mx, eqPos + 150, gridCol, 1);
+                        ctx.fillStyle = gridCol;
                         ctx.fillText(`${s}s`, mx + 5, eqPos - 140);
                     }
                 }
@@ -1067,7 +1232,7 @@
                 if (swOneCycle && mousePos.x >= originX && mousePos.x <= endX && mousePos.y >= 100 && mousePos.y <= topH - 50) {
                     let hoverX1 = mousePos.x;
                     let hoverX2 = hoverX1 + period * timeScale;
-                    let arrowY = Math.max(120, eqPos - maxAmpDist - 40);
+                    let arrowY = Math.max(120, eqPos - 190);
 
                     drawLine(hoverX1, 100, hoverX1, topH - 50, GRAPH_COLOR, 1);
                     drawLine(hoverX2, 100, hoverX2, topH - 50, GRAPH_COLOR, 1);
