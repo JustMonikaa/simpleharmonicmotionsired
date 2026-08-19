@@ -3,7 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Engine: Harmonic Motion</title>
+    <title>Physics Engine: Harmonic Motion & Circular Motion</title>
+    
+    <!-- Load MathJax to render LaTeX equations beautifully -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            startup: { pageReady: () => { return MathJax.startup.defaultPageReady(); } }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         /* CSS Configuration - Matches Manim Theme */
         body {
@@ -42,14 +52,22 @@
 
         .ui-element {
             pointer-events: auto;
+        }
+
+        /* Vertical Stack for Left Controls */
+        #top-controls-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
             position: absolute;
+            top: 20px;
+            left: 20px;
         }
 
         /* Switches */
         .switch-container {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
             cursor: pointer;
         }
         
@@ -62,9 +80,7 @@
             transition: background-color 0.2s;
         }
         
-        .switch-track.active {
-            background-color: #87c2a5;
-        }
+        .switch-track.active { background-color: #87c2a5; }
         
         .switch-thumb {
             width: 16px;
@@ -77,16 +93,24 @@
             transition: left 0.2s;
         }
         
-        .switch-track.active .switch-thumb {
-            left: 22px;
-        }
-        
-        .switch-label {
-            margin-left: 10px;
-            font-size: 14px;
+        .switch-track.active .switch-thumb { left: 22px; }
+        .switch-label { margin-left: 10px; font-size: 14px; }
+
+        /* Mode-Specific Switch Wrapper */
+        #shm-switches {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
         /* Standard Buttons */
+        .buttons-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
         .btn {
             background-color: #323232;
             border: 2px solid #ecece2;
@@ -96,29 +120,22 @@
             font-family: 'Consolas', monospace;
             font-size: 14px;
             cursor: pointer;
-            margin-bottom: 10px;
-            display: block;
-            width: 140px;
+            width: 160px;
             text-align: center;
             transition: background-color 0.1s;
         }
         
-        .btn:hover {
-            background-color: #505050;
-        }
-        
-        .btn:active {
-            background-color: #646464;
-        }
+        .btn:hover { background-color: #505050; }
+        .btn:active { background-color: #646464; }
 
         /* Bottom Square Buttons */
         .bottom-controls {
             position: absolute;
-            bottom: 50px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 20px;
+            gap: 15px;
         }
 
         .sq-btn {
@@ -129,7 +146,7 @@
             color: #ecece2;
             border-radius: 8px;
             font-family: 'Consolas', monospace;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -142,46 +159,25 @@
         .sq-btn:hover { background-color: #505050; }
         .sq-btn.active { background-color: #646464; }
 
-        /* Text Inputs */
-        .input-group {
-            margin-bottom: 15px;
-        }
-        
-        .input-label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-        
+        /* Text Inputs & Dropdowns */
+        .input-group { margin-top: 5px; }
+        .input-label { display: block; font-size: 14px; margin-bottom: 5px; }
         .text-input {
-            background-color: transparent;
+            background-color: #1e1e1e;
             border: 2px solid #646464;
             color: #ecece2;
             border-radius: 4px;
             padding: 4px 8px;
             font-family: 'Consolas', monospace;
             font-size: 14px;
-            width: 100px;
+            width: 140px;
             outline: none;
         }
-        
-        .text-input:focus {
-            border-color: #87c2a5;
-        }
+        .text-input:focus { border-color: #87c2a5; }
 
         /* Radio Buttons */
-        .radio-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .radio-item {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-        }
-        
+        .radio-group { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; }
+        .radio-item { display: flex; align-items: center; cursor: pointer; }
         .radio-circle {
             width: 14px;
             height: 14px;
@@ -192,11 +188,7 @@
             justify-content: center;
             align-items: center;
         }
-        
-        .radio-circle.active {
-            background-color: #87c2a5;
-        }
-        
+        .radio-circle.active { background-color: #87c2a5; }
         .radio-dot {
             width: 6px;
             height: 6px;
@@ -204,16 +196,22 @@
             background-color: #1e1e1e;
             display: none;
         }
-        
-        .radio-circle.active .radio-dot {
-            display: block;
+        .radio-circle.active .radio-dot { display: block; }
+
+        /* Description Box for Circle Mode */
+        #trig-desc-box {
+            display: none; 
+            position: absolute; 
+            top: 600px; 
+            left: 20px; 
+            width: 320px; 
+            padding: 15px; 
+            background: rgba(40,40,40,0.85); 
+            border: 1px solid #646464; 
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
         }
-
-        /* Specific positioning */
-        #top-left-controls { top: 20px; left: 20px; }
-        #shm-controls { margin-top: 10px; display: none; }
-        #variable-controls { margin-top: 15px; }
-
     </style>
 </head>
 <body>
@@ -222,8 +220,10 @@
     <div id="copyright">(c) Sir Ed GPHYS02G@LPUC 2025</div>
 
     <div id="ui-layer">
-        <!-- Top Left Shared Controls -->
-        <div id="top-left-controls" class="ui-element">
+        <!-- Single Vertical Column for All Controls -->
+        <div id="top-controls-wrapper" class="ui-element">
+            
+            <!-- Universal Switches -->
             <div class="switch-container" id="sw-friction">
                 <div class="switch-track"><div class="switch-thumb"></div></div>
                 <div class="switch-label">Friction</div>
@@ -234,30 +234,38 @@
                 <div class="switch-label">Show Amplitude Arrow</div>
             </div>
 
-            <!-- SHM Only Controls -->
-            <div id="shm-controls">
+            <!-- Mode Specific Switches -->
+            <div id="shm-switches" style="display: none;">
                 <div class="switch-container" id="sw-graph">
                     <div class="switch-track"><div class="switch-thumb"></div></div>
                     <div class="switch-label">Show graph</div>
                 </div>
+                <div class="switch-container" id="sw-onecycle">
+                    <div class="switch-track"><div class="switch-thumb"></div></div>
+                    <div class="switch-label">Show One Cycle</div>
+                </div>
+            </div>
+
+            <!-- Global Action Buttons -->
+            <div class="buttons-group">
                 <button class="btn" id="btn-forcesin">Force sin then play</button>
                 <button class="btn" id="btn-stop">Stop</button>
                 <button class="btn" id="btn-reset">Reset</button>
             </div>
 
-            <!-- Dynamic Variables -->
+            <!-- Variables (Hidden in Circle Mode) -->
             <div id="variable-controls">
-                <div class="input-group">
+                <div class="input-group" id="group-freq">
                     <span class="input-label">Freq (Hz) [Enter]:</span>
                     <input type="text" class="text-input" id="input-freq">
                 </div>
                 
-                <div class="input-group">
+                <div class="input-group" id="group-k">
                     <span class="input-label">Spring Const (K):</span>
                     <input type="text" class="text-input" id="input-k">
                 </div>
 
-                <div class="radio-group">
+                <div class="radio-group" id="group-radios">
                     <div class="radio-item" data-k="39.478">
                         <div class="radio-circle"><div class="radio-dot"></div></div>
                         <span class="switch-label">Default (K=39.5)</span>
@@ -272,6 +280,29 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Circle Mode Trigonometry Dropdown -->
+            <div class="input-group" id="group-trig" style="display: none;">
+                <span class="input-label">Trig Function:</span>
+                <select class="text-input" id="trig-select" style="cursor: pointer;">
+                    <option value="sin">Sine (sin)</option>
+                    <option value="cos">Cosine (cos)</option>
+                    <option value="tan">Tangent (tan)</option>
+                    <option value="sec">Secant (sec)</option>
+                    <option value="csc">Cosecant (csc)</option>
+                    <option value="cot">Cotangent (cot)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- LaTeX Mathematical Descriptions -->
+        <div id="trig-desc-box" class="ui-element">
+            <div id="desc-sin" class="trig-desc">The <b>Sine</b> ($\sin\theta$) is the vertical projection of the block's position, forming the opposite leg of the right triangle.</div>
+            <div id="desc-cos" class="trig-desc">The <b>Cosine</b> ($\cos\theta$) is the horizontal projection of the block's position, forming the adjacent leg of the right triangle.</div>
+            <div id="desc-tan" class="trig-desc">The <b>Tangent</b> ($\tan\theta$) is the line segment <i>tangent</i> to the circle at the current angle, extending until it intersects the x-axis.</div>
+            <div id="desc-sec" class="trig-desc">The <b>Secant</b> ($\sec\theta$) comes from the Latin <i>secare</i> (to cut). It is the segment extending from the origin to intersect the tangent line, "cutting" through the circle.</div>
+            <div id="desc-csc" class="trig-desc">The <b>Cosecant</b> ($\csc\theta$) is the segment on the y-axis extending from the origin to where it intersects the tangent line.</div>
+            <div id="desc-cot" class="trig-desc">The <b>Cotangent</b> ($\cot\theta$) is the line segment <i>tangent</i> to the circle at the current angle, extending until it intersects the y-axis.</div>
         </div>
 
         <!-- Bottom Mode Buttons -->
@@ -283,25 +314,20 @@
                 <span>Simple</span>
                 <span>Harmonic</span>
             </button>
+            <button class="sq-btn" id="btn-circle">
+                <span>Circle</span>
+                <span>Motion</span>
+            </button>
         </div>
     </div>
 
     <script>
-        // --- Setup Canvas for High-Resolution Screens ---
+    window.onload = function() {
+        // --- Setup Canvas ---
         const canvas = document.getElementById('sim-canvas');
         const ctx = canvas.getContext('2d');
-        let width, height;
-
-        function resizeCanvas() {
-            const dpr = window.devicePixelRatio || 1;
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width * dpr;
-            canvas.height = height * dpr;
-            ctx.scale(dpr, dpr);
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        let width = window.innerWidth;
+        let height = window.innerHeight;
 
         // --- Colors ---
         const LINE_COLOR = "#ecece2";
@@ -309,35 +335,52 @@
         const BLOCK_COLOR = "#3d5a80";
         const GRAPH_COLOR = "#87c2a5";
         const DIM_LINE = "rgba(100, 100, 100, 0.5)";
+        
+        const COLOR_TAN = "#f2cc8f"; 
+        const COLOR_SEC = "#81b29a"; 
+        const COLOR_CSC = "#d4a373"; 
+        const COLOR_COT = "#e07a5f"; 
 
-        // --- Physics Variables ---
+        // --- Physics & State Variables ---
         const MASS = 1.0;
         const C_FRICTION = 0.4; 
         
         let K = 39.478; 
         let mode = "OSC"; 
-        let eqPos = 500;
+        let eqPos = Math.max(400, width * 0.5); 
         let pos = eqPos;
         let vel = 0;
+        let phase = 0; 
+        
         let dragging = false;
         let stopped = false;
         let maxAmpDist = 0;
         let simTime = 0;
-        let history = [];
+        let graphHistory = []; 
+        let mousePos = { x: 0, y: 0 };
 
-        // --- UI State ---
         let swFriction = false;
         let swAmplitude = false;
         let swGraph = false;
+        let swOneCycle = false;
+        let selectedTrig = "sin";
 
         // --- DOM Elements ---
-        const elShmControls = document.getElementById('shm-controls');
+        const elShmSwitches = document.getElementById('shm-switches');
+        const elSwFriction = document.getElementById('sw-friction');
+        const elVarControls = document.getElementById('variable-controls');
+        const elGroupTrig = document.getElementById('group-trig');
+        const elDescBox = document.getElementById('trig-desc-box');
+        
         const elOscBtn = document.getElementById('btn-osc');
         const elShmBtn = document.getElementById('btn-shm');
+        const elCircleBtn = document.getElementById('btn-circle');
         const elFreqIn = document.getElementById('input-freq');
         const elKIn = document.getElementById('input-k');
+        const elTrigSelect = document.getElementById('trig-select');
         const radioItems = document.querySelectorAll('.radio-item');
 
+        // --- Core Functions ---
         function updateInputs() {
             let currentFreq = Math.sqrt(K / MASS) / (2 * Math.PI);
             if(document.activeElement !== elFreqIn) elFreqIn.value = currentFreq.toFixed(2);
@@ -352,20 +395,72 @@
                 }
             });
         }
-        updateInputs();
+
+        function updateTrigDesc() {
+            document.querySelectorAll('.trig-desc').forEach(el => el.style.display = 'none');
+            document.getElementById('desc-' + selectedTrig).style.display = 'block';
+        }
 
         function resetPhysics() {
-            eqPos = (mode === "OSC") ? 500 : 400;
+            eqPos = (mode === "OSC") ? Math.max(400, width * 0.5) : 400;
             pos = eqPos;
             vel = 0;
+            phase = 0;
             dragging = false;
             stopped = false;
             maxAmpDist = 0;
             simTime = 0;
-            history = [];
+            graphHistory = [];
         }
 
-        // --- Event Listeners for UI ---
+        function updateModeUI() {
+            elOscBtn.classList.remove('active');
+            elShmBtn.classList.remove('active');
+            elCircleBtn.classList.remove('active');
+            
+            if (mode === "OSC") {
+                elOscBtn.classList.add('active');
+                elShmSwitches.style.display = "none";
+                elSwFriction.style.display = "flex";
+                elVarControls.style.display = "block";
+                elGroupTrig.style.display = "none";
+                elDescBox.style.display = "none";
+            } else if (mode === "SHM") {
+                elShmBtn.classList.add('active');
+                elShmSwitches.style.display = "flex";
+                elSwFriction.style.display = "flex";
+                elVarControls.style.display = "block";
+                elGroupTrig.style.display = "none";
+                elDescBox.style.display = "none";
+            } else if (mode === "CIRCLE") {
+                elCircleBtn.classList.add('active');
+                elShmSwitches.style.display = "flex";
+                elSwFriction.style.display = "none";
+                elVarControls.style.display = "none";
+                elGroupTrig.style.display = "block";
+                elDescBox.style.display = "block";
+                updateTrigDesc();
+            }
+            resetPhysics();
+        }
+
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            ctx.scale(dpr, dpr);
+            
+            if (mode === "OSC" && !dragging) resetPhysics();
+        }
+
+        // --- Initialization ---
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        updateInputs();
+
+        // --- Event Listeners ---
         document.getElementById('sw-friction').addEventListener('click', function() {
             swFriction = !swFriction;
             this.querySelector('.switch-track').classList.toggle('active');
@@ -378,30 +473,29 @@
             swGraph = !swGraph;
             this.querySelector('.switch-track').classList.toggle('active');
         });
-
-        elOscBtn.addEventListener('click', () => {
-            mode = "OSC";
-            elOscBtn.classList.add('active');
-            elShmBtn.classList.remove('active');
-            elShmControls.style.display = "none";
-            resetPhysics();
+        document.getElementById('sw-onecycle').addEventListener('click', function() {
+            swOneCycle = !swOneCycle;
+            this.querySelector('.switch-track').classList.toggle('active');
         });
 
-        elShmBtn.addEventListener('click', () => {
-            mode = "SHM";
-            elShmBtn.classList.add('active');
-            elOscBtn.classList.remove('active');
-            elShmControls.style.display = "block";
-            resetPhysics();
+        elOscBtn.addEventListener('click', () => { mode = "OSC"; updateModeUI(); });
+        elShmBtn.addEventListener('click', () => { mode = "SHM"; updateModeUI(); });
+        elCircleBtn.addEventListener('click', () => { mode = "CIRCLE"; updateModeUI(); });
+
+        elTrigSelect.addEventListener('change', (e) => {
+            selectedTrig = e.target.value;
+            graphHistory = []; 
+            updateTrigDesc();
         });
 
         document.getElementById('btn-forcesin').addEventListener('click', () => {
             pos = eqPos;
+            phase = 0;
             let omega = Math.sqrt(K / MASS);
-            vel = (mode === "SHM") ? -(150 * omega) : (150 * omega);
+            vel = (mode === "SHM" || mode === "CIRCLE") ? -(150 * omega) : (150 * omega);
             stopped = false;
             dragging = false;
-            history = [];
+            graphHistory = [];
             simTime = 0;
             maxAmpDist = 150;
         });
@@ -415,9 +509,9 @@
                 if (!isNaN(val) && val > 0) {
                     if (this.id === 'input-freq') {
                         let newK = Math.pow(val * 2 * Math.PI, 2) * MASS;
-                        K = Math.max(5.0, Math.min(newK, 300.0));
+                        K = Math.max(0.1, Math.min(newK, 300.0));
                     } else if (this.id === 'input-k') {
-                        K = Math.max(5.0, Math.min(val, 300.0));
+                        K = Math.max(0.1, Math.min(val, 300.0));
                     }
                 }
                 updateInputs();
@@ -438,29 +532,30 @@
             });
         });
 
-        // --- Mouse Dragging Interaction ---
+        // --- Dragging & Interaction ---
         function getMousePos(evt) {
             const rect = canvas.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            return {
-                x: (evt.clientX - rect.left),
-                y: (evt.clientY - rect.top)
-            };
+            return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
         }
 
         canvas.addEventListener('mousedown', (e) => {
             let m = getMousePos(e);
             let topH = height * 0.8;
             if (m.y < topH) {
-                let bRect = (mode === "OSC") 
-                    ? {x: pos - 25, y: topH - 150 - 50, w: 50, h: 50}
-                    : {x: 350 - 25, y: pos - 25, w: 50, h: 50}; // Shifted block boundary
+                let bRect;
+                if (mode === "OSC") {
+                    bRect = {x: pos - 25, y: topH - 150 - 50, w: 50, h: 50};
+                } else if (mode === "SHM") {
+                    bRect = {x: 400 - 25, y: pos - 25, w: 50, h: 50};
+                } else if (mode === "CIRCLE") {
+                    bRect = {x: 600 - 25, y: pos - 25, w: 50, h: 50};
+                }
                 
-                if (m.x > bRect.x - 20 && m.x < bRect.x + bRect.w + 20 &&
+                if (bRect && m.x > bRect.x - 20 && m.x < bRect.x + bRect.w + 20 &&
                     m.y > bRect.y - 20 && m.y < bRect.y + bRect.h + 20) {
                     dragging = true;
                     stopped = false;
-                    history = [];
+                    graphHistory = [];
                     simTime = 0;
                 }
             }
@@ -475,13 +570,28 @@
         });
 
         window.addEventListener('mousemove', (e) => {
+            mousePos = getMousePos(e);
+            
             if (dragging) {
-                let m = getMousePos(e);
+                let m = mousePos;
                 let topH = height * 0.8;
+                
                 if (mode === "OSC") {
-                    pos = Math.max(380, Math.min(m.x, width - 30));
+                    let wallX = 100;
+                    let maxDrag = eqPos - (wallX + 25);
+                    pos = Math.max(eqPos - maxDrag, Math.min(m.x, eqPos + maxDrag));
                 } else if (mode === "SHM") {
                     pos = Math.max(130, Math.min(m.y, topH - 30));
+                } else if (mode === "CIRCLE") {
+                    pos = Math.max(eqPos - 150, Math.min(m.y, eqPos + 150));
+                    
+                    let baseAngle = Math.asin((eqPos - pos) / 150);
+                    let currentPhase = ((phase % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+                    if (currentPhase > Math.PI / 2 && currentPhase < 3 * Math.PI / 2) {
+                        phase = Math.PI - baseAngle; 
+                    } else {
+                        phase = baseAngle; 
+                    }
                 }
                 maxAmpDist = Math.abs(pos - eqPos);
             }
@@ -490,6 +600,33 @@
         // --- Physics Update ---
         let lastTime = 0;
         function updatePhysics(dt) {
+            let omega = Math.sqrt(K / MASS);
+
+            if (mode === "CIRCLE") {
+                if (!dragging && !stopped) {
+                    phase += omega * dt;
+                    pos = eqPos - 150 * Math.sin(phase);
+                }
+                simTime += dt;
+                
+                if (swGraph && !dragging && !stopped) {
+                    let val = 0;
+                    switch(selectedTrig) {
+                        case "sin": val = Math.sin(phase); break;
+                        case "cos": val = Math.cos(phase); break;
+                        case "tan": val = Math.tan(phase); break;
+                        case "sec": val = 1 / Math.cos(phase); break;
+                        case "csc": val = 1 / Math.sin(phase); break;
+                        case "cot": val = 1 / Math.tan(phase); break;
+                    }
+                    let yPlot = eqPos - 150 * val;
+                    yPlot = Math.max(-5000, Math.min(yPlot, 5000)); 
+                    graphHistory.push({t: simTime, y: yPlot});
+                    graphHistory = graphHistory.filter(pt => simTime - pt.t < 10);
+                }
+                return; 
+            }
+
             if (!dragging && !stopped) {
                 let springForce = -K * (pos - eqPos);
                 let frictionForce = swFriction ? -C_FRICTION * vel : 0;
@@ -499,17 +636,28 @@
                 vel += acc * dt;
                 pos += vel * dt;
 
-                // Detect turnaround points (peaks) to track dynamic amplitude decay
+                if (mode === "OSC") {
+                    let wallX = 100;
+                    if (pos - 25 < wallX) {
+                        pos = wallX + 25;
+                        vel = Math.abs(vel) * 0.8; 
+                    }
+                } else if (mode === "SHM") {
+                    let ceilingY = 100;
+                    if (pos - 25 < ceilingY) {
+                        pos = ceilingY + 25;
+                        vel = Math.abs(vel) * 0.8;
+                    }
+                }
+
                 if (Math.sign(oldVel) !== Math.sign(vel)) {
                     maxAmpDist = Math.abs(pos - eqPos);
                 }
                 
-                // Track expansion if we are actively pushing it out further
                 if (Math.abs(pos - eqPos) > maxAmpDist) {
                     maxAmpDist = Math.abs(pos - eqPos);
                 }
 
-                // Completely clear amplitude if it comes to a resting stop
                 if (swFriction && Math.abs(vel) < 0.5 && Math.abs(pos - eqPos) < 0.5) {
                     maxAmpDist = 0;
                 }
@@ -518,12 +666,12 @@
             }
 
             if (mode === "SHM" && swGraph && !dragging) {
-                if (!stopped) history.push({t: simTime, y: pos});
-                history = history.filter(pt => simTime - pt.t < 10);
+                if (!stopped) graphHistory.push({t: simTime, y: pos});
+                graphHistory = graphHistory.filter(pt => simTime - pt.t < 10);
             }
         }
 
-        // --- Custom Drawing Functions ---
+        // --- Custom Drawing ---
         function drawLine(x1, y1, x2, y2, color, thickness) {
             ctx.beginPath();
             ctx.moveTo(x1, y1);
@@ -591,9 +739,9 @@
             ctx.fillText("s", centerX + 2, bottomY + 4);
         }
 
-        // --- Render Loops ---
+        // --- Renderers ---
         function renderOscillation(topH) {
-            let vX = 350; // Shifted right
+            let vX = 100; 
             let vY = topH - 150;
 
             drawLine(vX, 50, vX, vY, LINE_COLOR, 2);
@@ -604,9 +752,7 @@
             drawSpring(SPRING_COLOR, vX, vY - 25, bLeft, vY - 25, 3);
             
             ctx.fillStyle = BLOCK_COLOR;
-            ctx.beginPath();
-            ctx.roundRect(bLeft, bTop, 50, 50, 4);
-            ctx.fill();
+            ctx.fillRect(bLeft, bTop, 50, 50);
 
             drawLine(eqPos, vY - 10, eqPos, vY + 10, LINE_COLOR, 2);
             ctx.fillStyle = LINE_COLOR;
@@ -619,8 +765,9 @@
             drawArrow(LINE_COLOR, eqPos + 15, vY + 20, eqPos + 45, vY + 20, 2);
 
             let force = -K * (pos - eqPos);
-            if (Math.abs(force) > 5) {
-                let fLen = Math.min(Math.abs(force) * 0.5, 150);
+            if (Math.abs(force) > 0.01) {
+                let fLen = Math.abs(force) * 2;
+                fLen = Math.max(25, Math.min(fLen, 250)); 
                 let fDir = (force < 0) ? -1 : 1;
                 let startX = pos;
                 let startY = bTop - 20;
@@ -657,7 +804,7 @@
         }
 
         function renderSHM(topH) {
-            let vX = 350; // Shifted right
+            let vX = 400; 
 
             drawLine(vX - 50, 100, vX + 50, 100, LINE_COLOR, 2);
             drawLine(vX, 100, vX, topH - 50, LINE_COLOR, 2);
@@ -666,9 +813,7 @@
             drawSpring(SPRING_COLOR, vX, 100, vX, bTop, 3);
             
             ctx.fillStyle = BLOCK_COLOR;
-            ctx.beginPath();
-            ctx.roundRect(vX - 25, bTop, 50, 50, 4);
-            ctx.fill();
+            ctx.fillRect(vX - 25, bTop, 50, 50);
 
             drawLine(vX - 10, eqPos, vX + 10, eqPos, LINE_COLOR, 2);
             ctx.fillStyle = LINE_COLOR;
@@ -677,8 +822,9 @@
             ctx.fillText("0", vX - 30, eqPos + 4);
 
             let force = -K * (pos - eqPos);
-            if (Math.abs(force) > 5) {
-                let fLen = Math.min(Math.abs(force) * 0.5, 150);
+            if (Math.abs(force) > 0.01) {
+                let fLen = Math.abs(force) * 2;
+                fLen = Math.max(25, Math.min(fLen, 250));
                 let fDir = (force < 0) ? -1 : 1;
                 let startX = vX + 45;
                 let endY = pos + fLen * fDir;
@@ -686,7 +832,6 @@
                 drawLatexForce(SPRING_COLOR, startX + 25, pos + (fLen * fDir)/2 + 5);
             }
 
-            // Fixed text alignment directly flush with the spring axis
             let freq = Math.sqrt(K / MASS) / (2 * Math.PI);
             let period = freq > 0 ? 1 / freq : 0;
             ctx.fillStyle = LINE_COLOR;
@@ -696,7 +841,7 @@
             ctx.fillText(`Period: ${period.toFixed(2)} s`, vX, 85);
 
             if (swGraph) {
-                let originX = 550; // Shifted right to maintain padding from the spring line
+                let originX = 600; 
                 let endX = width - 50;
                 
                 drawLine(originX, eqPos, endX, eqPos, LINE_COLOR, 1); 
@@ -710,8 +855,8 @@
                 ctx.beginPath();
                 let hasStarted = false;
                 
-                for(let i=0; i<history.length; i++) {
-                    let pt = history[i];
+                for(let i=0; i<graphHistory.length; i++) {
+                    let pt = graphHistory[i];
                     let px = originX + (simTime - pt.t) * timeScale;
                     if (px <= endX) {
                         if (!hasStarted) {
@@ -740,6 +885,20 @@
                         ctx.fillText(`${s}s`, mx + 5, eqPos - 140);
                     }
                 }
+
+                if (swOneCycle && mousePos.x >= originX && mousePos.x <= endX && mousePos.y >= 100 && mousePos.y <= topH - 50) {
+                    let hoverX1 = mousePos.x;
+                    let hoverX2 = hoverX1 + period * timeScale;
+                    let arrowY = Math.max(120, eqPos - maxAmpDist - 40);
+
+                    drawLine(hoverX1, 100, hoverX1, topH - 50, GRAPH_COLOR, 1);
+                    drawLine(hoverX2, 100, hoverX2, topH - 50, GRAPH_COLOR, 1);
+                    
+                    drawDoubleArrow(LINE_COLOR, hoverX1, arrowY, hoverX2, arrowY, 1);
+                    ctx.fillStyle = LINE_COLOR;
+                    ctx.textAlign = "center";
+                    ctx.fillText(`Period: ${period.toFixed(2)} s`, (hoverX1 + hoverX2) / 2, arrowY - 10);
+                }
             }
 
             if (maxAmpDist > 5) {
@@ -762,6 +921,165 @@
             }
         }
 
+        function renderCircleMode(topH) {
+            let R = 150;
+            let cX = 360; 
+            let sX = 600; 
+
+            ctx.beginPath();
+            ctx.arc(cX, eqPos, R, 0, 2 * Math.PI);
+            ctx.strokeStyle = DIM_LINE;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            drawLine(cX - R - 20, eqPos, cX + R + 20, eqPos, DIM_LINE, 1);
+            drawLine(cX, eqPos - R - 20, cX, eqPos + R + 20, DIM_LINE, 1);
+
+            let cosTheta = Math.cos(phase);
+            let sinTheta = Math.sin(phase);
+            let pX = cX + R * cosTheta;
+            let pY = eqPos - R * sinTheta;
+
+            ctx.beginPath();
+            ctx.arc(pX, pY, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = LINE_COLOR;
+            ctx.fill();
+
+            ctx.setLineDash([5, 5]);
+            drawLine(pX, pY, sX - 25, pos, DIM_LINE, 1);
+            ctx.setLineDash([]);
+
+            drawLine(cX, eqPos, pX, pY, LINE_COLOR, 2);
+            drawArrow(SPRING_COLOR, cX, eqPos, pX, eqPos, 2); 
+            drawArrow(GRAPH_COLOR, pX, eqPos, pX, pY, 2);     
+
+            if (Math.abs(cosTheta) > 0.001 && Math.abs(sinTheta) > 0.001) {
+                let tx = cX + R / cosTheta;
+                let ty = eqPos - R / sinTheta;
+
+                if (selectedTrig === "tan") {
+                    drawLine(pX, pY, tx, eqPos, COLOR_TAN, 3);
+                } else if (selectedTrig === "cot") {
+                    drawLine(pX, pY, cX, ty, COLOR_COT, 3);
+                } else if (selectedTrig === "sec") {
+                    drawLine(cX, eqPos, tx, eqPos, COLOR_SEC, 3);
+                } else if (selectedTrig === "csc") {
+                    drawLine(cX, eqPos, cX, ty, COLOR_CSC, 3);
+                }
+            }
+
+            let deg = Math.round((phase * 180 / Math.PI) % 360);
+            if (deg < 0) deg += 360;
+
+            ctx.fillStyle = LINE_COLOR;
+            ctx.font = "14px 'Consolas', monospace";
+
+            ctx.textAlign = "center";
+            let cosTxtY = (sinTheta >= 0) ? eqPos + 20 : eqPos - 12;
+            ctx.fillText(`cos(${deg}°) = ${cosTheta.toFixed(2)}`, cX + (R * cosTheta)/2, cosTxtY);
+
+            ctx.save();
+            let sinTxtX = (cosTheta >= 0) ? pX + 15 : pX - 15;
+            ctx.translate(sinTxtX, eqPos - (R * sinTheta)/2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = "center";
+            ctx.fillText(`sin(${deg}°) = ${sinTheta.toFixed(2)}`, 0, 0);
+            ctx.restore();
+
+            drawLine(sX - 50, 100, sX + 50, 100, LINE_COLOR, 2);
+            drawLine(sX, 100, sX, topH - 50, LINE_COLOR, 2);
+
+            let bTop = pos - 25;
+            drawSpring(SPRING_COLOR, sX, 100, sX, bTop, 3);
+            
+            ctx.fillStyle = BLOCK_COLOR;
+            ctx.fillRect(sX - 25, bTop, 50, 50);
+
+            drawLine(sX - 10, eqPos, sX + 10, eqPos, LINE_COLOR, 2);
+            ctx.fillStyle = LINE_COLOR;
+            ctx.textAlign = "center";
+            ctx.fillText("0", sX - 30, eqPos + 4);
+
+            let freq = Math.sqrt(K / MASS) / (2 * Math.PI);
+            let period = freq > 0 ? 1 / freq : 0;
+            ctx.textAlign = "left"; 
+            ctx.fillText(`Frequency: ${freq.toFixed(2)} Hz`, sX, 65);
+            ctx.fillText(`Period: ${period.toFixed(2)} s`, sX, 85);
+
+            if (swGraph) {
+                let originX = 750; 
+                let endX = width - 50;
+                
+                drawLine(originX, eqPos, endX, eqPos, LINE_COLOR, 1); 
+                drawLine(originX, 100, originX, topH - 50, LINE_COLOR, 1); 
+                
+                ctx.fillText("+x (Time)", endX - 80, eqPos + 15);
+                ctx.fillText("+y", originX - 25, 100);
+                ctx.fillText("-y", originX - 25, topH - 60);
+
+                let timeScale = 120;
+                ctx.beginPath();
+                let hasStarted = false;
+                
+                for(let i=0; i<graphHistory.length; i++) {
+                    let pt = graphHistory[i];
+                    let px = originX + (simTime - pt.t) * timeScale;
+                    
+                    if (px <= endX) {
+                        if (!hasStarted) {
+                            ctx.moveTo(px, pt.y);
+                            hasStarted = true;
+                        } else {
+                            if (Math.abs(pt.y - graphHistory[i-1].y) > R * 2) {
+                                ctx.moveTo(px, pt.y);
+                            } else {
+                                ctx.lineTo(px, pt.y);
+                            }
+                        }
+                    }
+                }
+                ctx.strokeStyle = GRAPH_COLOR;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                if (graphHistory.length > 0) {
+                    let currentY = graphHistory[graphHistory.length-1].y;
+                    if (currentY >= 100 && currentY <= topH - 50) {
+                        ctx.setLineDash([2, 4]);
+                        drawLine(sX + 25, currentY, originX, currentY, DIM_LINE, 1);
+                        ctx.setLineDash([]);
+                    }
+                }
+
+                let alpha = (Math.sin(Date.now() * 0.005) + 1) / 2;
+                let mCol = `rgba(236, 230, 226, ${alpha})`;
+                
+                let maxSec = Math.floor(simTime);
+                for(let s = Math.max(0, maxSec - 10); s <= maxSec; s++) {
+                    let mx = originX + (simTime - s) * timeScale;
+                    if (mx >= originX && mx <= endX) {
+                        drawLine(mx, eqPos - 150, mx, eqPos + 150, mCol, 1);
+                        ctx.fillStyle = mCol;
+                        ctx.fillText(`${s}s`, mx + 5, eqPos - 140);
+                    }
+                }
+                
+                if (swOneCycle && mousePos.x >= originX && mousePos.x <= endX && mousePos.y >= 100 && mousePos.y <= topH - 50) {
+                    let hoverX1 = mousePos.x;
+                    let hoverX2 = hoverX1 + period * timeScale;
+                    let arrowY = Math.max(120, eqPos - maxAmpDist - 40);
+
+                    drawLine(hoverX1, 100, hoverX1, topH - 50, GRAPH_COLOR, 1);
+                    drawLine(hoverX2, 100, hoverX2, topH - 50, GRAPH_COLOR, 1);
+                    
+                    drawDoubleArrow(LINE_COLOR, hoverX1, arrowY, hoverX2, arrowY, 1);
+                    ctx.fillStyle = LINE_COLOR;
+                    ctx.textAlign = "center";
+                    ctx.fillText(`Period: ${period.toFixed(2)} s`, (hoverX1 + hoverX2) / 2, arrowY - 10);
+                }
+            }
+        }
+
         // --- Main Loop ---
         function loop(timestamp) {
             if (!lastTime) lastTime = timestamp;
@@ -778,14 +1096,17 @@
 
             if (mode === "OSC") {
                 renderOscillation(topH);
-            } else {
+            } else if (mode === "SHM") {
                 renderSHM(topH);
+            } else if (mode === "CIRCLE") {
+                renderCircleMode(topH);
             }
 
             requestAnimationFrame(loop);
         }
 
         requestAnimationFrame(loop);
+    };
     </script>
 </body>
 </html>
